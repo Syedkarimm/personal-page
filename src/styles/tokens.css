@@ -1,0 +1,83 @@
+/* Hallmark · macrostructure: Index-First (user-directed redesign from Bento Grid) · hero: left-biased, fixed-height · sections: intro / projects / library split
+ * theme: custom · vibe: "cool calculated crime, steel night, red case-marker" · paper: oklch(14% 0.012 240) · accent: oklch(58% 0.21 27)
+ * display: Space Grotesk · body: Geist · outlier: Geist Mono · axes: dark / geometric-sans / warm (red ~25°)
+ * nav: N5 floating pill · footer: Ft5 statement · enrichment: none (two fixed canvas blooms, genre-permitted)
+ * studied: no · context: user-provided (audience=friends+recruiters · use=get-to-know-me · tone=soft)
+ * pre-emit critique: P4 H4 E4 S4 R5 V4
+ * contrast: pass (40–41) · slop: pass (42–45) · honest: pass (46) · chrome: pass (47) · tokens: pass (48)
+ * responsive: pass (49) · icons: pass (30) · mobile: pass (34, 49, 50–57)
+ */
+
+:root {
+  /* ---- color ---- */
+  --color-paper:      oklch(14% 0.012 240);
+  --color-paper-2:    oklch(17% 0.014 240);
+  --color-paper-3:    oklch(21% 0.016 240);
+  --color-ink:        oklch(93% 0.008 240);
+  --color-ink-2:      oklch(84% 0.008 240);
+  --color-muted:      oklch(68% 0.012 240);
+  --color-rule:       oklch(30% 0.014 240);
+  --color-rule-2:     oklch(24% 0.012 240);
+  --color-accent:     oklch(58% 0.21 27);
+  --color-accent-ink: oklch(96% 0.008 240);
+  --color-focus:      oklch(62% 0.23 27);
+  --color-glow:       oklch(58% 0.13 245 / 0.13);
+  --color-glow-2:     oklch(55% 0.12 235 / 0.09);
+  --color-searchlight: oklch(92% 0.01 240 / 0.07);
+  --color-line:        oklch(97% 0.005 240);
+  --color-redact:      oklch(8% 0.01 240);
+  --color-accent-glow: oklch(60% 0.21 27 / 0.55);
+
+  /* ---- type ---- */
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    "Geist Mono", ui-monospace, monospace;
+
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-md:   1.25rem;
+  --text-lg:   1.5625rem;
+  --text-xl:   1.9531rem;
+  --text-2xl:  2.4414rem;
+  --text-3xl:  3.0518rem;
+  --text-display: clamp(2.75rem, 5vw + 1rem, 4.75rem);
+
+  /* ---- space (4pt scale) ---- */
+  --space-3xs: 0.125rem;
+  --space-2xs: 0.25rem;
+  --space-xs:  0.5rem;
+  --space-sm:  0.75rem;
+  --space-md:  1rem;
+  --space-lg:  1.5rem;
+  --space-xl:  2.5rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+  --space-4xl: 9rem;
+  --page-gutter: clamp(1rem, 4vw, 3rem);
+
+  /* ---- motion ---- */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:     cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long:  420ms;
+
+  /* ---- rules & radii (sharp — calculated) ---- */
+  --rule-hair: 1px;
+  --rule-line: 3px;
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-pill: 999px;
+
+  /* ---- z scale ---- */
+  --z-base:     1;
+  --z-raised:   10;
+  --z-dropdown: 100;
+  --z-sticky:   200;
+  --z-modal:    400;
+  --z-toast:    500;
+  --z-tooltip:  600;
+}

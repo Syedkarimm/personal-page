@@ -1,0 +1,11 @@
+{
+  "date": "2026-07-15",
+  "framework": "Astro 7",
+  "styling": "Tailwind v4 (@tailwindcss/vite), bare global.css",
+  "fonts": "none configured",
+  "palette": "none",
+  "motion": "motion-cut (no motion library)",
+  "spacing": "none configured",
+  "preserve": [],
+  "introduce": ["token system", "macrostructure", "microinteraction discipline", "slop-test gates"]
+}

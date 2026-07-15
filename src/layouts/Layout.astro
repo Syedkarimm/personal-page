@@ -1,0 +1,61 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "Syed Karim",
+  description = "Personal site of Syed Karim — projects, books, films, and a bit about me.",
+} = Astro.props;
+
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=Geist:wght@400;500&family=Geist+Mono:wght@400&display=swap"
+      rel="stylesheet"
+    />
+    <title>{title}</title>
+  </head>
+  <body>
+    <div class="line-v" aria-hidden="true"></div>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <script>
+      // cursor searchlight — tracks the pointer across the whole page
+      const fine = matchMedia("(hover: hover) and (pointer: fine)").matches;
+      const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (fine && !reduced) {
+        document.addEventListener("pointermove", (e) => {
+          document.body.style.setProperty("--mx", `${e.clientX}px`);
+          document.body.style.setProperty("--my", `${e.clientY}px`);
+          document.body.classList.add("torch-on");
+        });
+        document.documentElement.addEventListener("mouseleave", () => {
+          document.body.classList.remove("torch-on");
+        });
+      }
+    </script>
+
+    <footer class="foot-stmt">
+      <p class="foot-stmt__line">
+        When men, even unknowingly, are to meet one day, whatever may befall
+        each, whatever their diverging paths, on the said day, they will
+        inevitably come together in the <span class="hl">red circle</span>.
+      </p>
+    </footer>
+  </body>
+</html>

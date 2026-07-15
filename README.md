@@ -1,0 +1,1 @@
+This is a website containing person information of me (Syed Karim). The website acts as a portfolio showcasing my projects and interests. 

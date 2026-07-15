@@ -1,0 +1,300 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+import { Image } from "astro:assets";
+import heatStill from "../assets/stills/heat.jpg";
+
+const statusLabel: Record<string, string> = {
+  reading: "Now reading",
+  favorite: "Favorite",
+  read: "Read",
+  watching: "Last watched",
+  watched: "Watched",
+};
+
+const books = (await getCollection("books")).sort(
+  (a, b) => a.data.order - b.data.order
+);
+const movies = (await getCollection("movies")).sort(
+  (a, b) => a.data.order - b.data.order
+);
+
+const reading = books.find((b) => b.data.status === "reading") ?? books[0];
+const lastWatched =
+  movies.find((m) => m.data.status === "watching") ?? movies[0];
+
+const favoriteBooks = books.filter((b) => b.data.status === "favorite");
+const favoriteMovies = movies.filter((m) => m.data.status === "favorite");
+---
+
+<Layout>
+  <section class="hero wrap reveal" style="--i: 0">
+    <div>
+      <h1 class="hero__title">Call me <span class="hl">Syed</span>.</h1>
+      <ul class="dossier">
+        {reading && (
+          <li class="dossier__row">
+            <span class="tag">Now reading</span>
+            <span class="dossier__val">{reading.data.title} — {reading.data.author}</span>
+          </li>
+        )}
+        {lastWatched && (
+          <li class="dossier__row">
+            <span class="tag">Last watched</span>
+            <span class="dossier__val">{lastWatched.data.title} ({lastWatched.data.year})</span>
+          </li>
+        )}
+        <li class="dossier__row" id="lastfm-row" hidden>
+          <span class="tag" id="lastfm-label">Now listening</span>
+          <span class="dossier__val marquee" id="lastfm-marquee">
+            <span class="marquee__track">
+              <span class="marquee__copy" id="lastfm-value">—</span>
+              <span class="marquee__copy marquee__copy--dup" id="lastfm-value-dup" aria-hidden="true">—</span>
+            </span>
+          </span>
+        </li>
+        <li class="dossier__row">
+          <span class="tag">Dallas, TX</span>
+          <span class="dossier__val" id="dallas-clock">—</span>
+        </li>
+      </ul>
+      <script>
+        const clock = document.getElementById("dallas-clock");
+        const timeFmt = new Intl.DateTimeFormat("en-US", {
+          timeZone: "America/Chicago",
+          hour12: false,
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          timeZoneName: "short",
+        });
+        const dateFmt = new Intl.DateTimeFormat("en-US", {
+          timeZone: "America/Chicago",
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+        });
+        const tick = () => {
+          if (!clock) return;
+          const now = new Date();
+          clock.textContent = `${timeFmt.format(now)} · ${dateFmt.format(now)}`;
+        };
+        tick();
+        setInterval(tick, 1000);
+
+        // Last.fm — live "now listening" dossier row.
+        // TODO: set your Last.fm username, and get a free API key at
+        // https://www.last.fm/api/account/create — the row stays hidden until both are set.
+        const LASTFM_USER = "SyedKarim1";
+        const LASTFM_KEY = "e28ec4a661b668af5ae5ccb652be2fdd";
+
+        const lastfmRow = document.getElementById("lastfm-row");
+        const lastfmLabel = document.getElementById("lastfm-label");
+        const lastfmValue = document.getElementById("lastfm-value");
+        const lastfmValueDup = document.getElementById("lastfm-value-dup");
+        const lastfmMarquee = document.getElementById("lastfm-marquee");
+
+        const fetchNowListening = async () => {
+          if (!LASTFM_USER || !LASTFM_KEY || !lastfmRow || !lastfmLabel || !lastfmValue) return;
+          try {
+            const res = await fetch(
+              `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${encodeURIComponent(LASTFM_USER)}&api_key=${LASTFM_KEY}&format=json&limit=1`
+            );
+            if (!res.ok) return;
+            const data = await res.json();
+            const track = data?.recenttracks?.track?.[0];
+            if (!track?.name) return;
+            const nowPlaying = track["@attr"]?.nowplaying === "true";
+            const artist = track.artist?.["#text"] ?? "";
+            const text = artist ? `${track.name} — ${artist}` : track.name;
+            lastfmLabel.textContent = nowPlaying ? "Now listening" : "Now listening";
+            lastfmValue.textContent = text;
+            if (lastfmValueDup) lastfmValueDup.textContent = text;
+            lastfmRow.hidden = false;
+            // marquee only when the text actually overflows its cell
+            requestAnimationFrame(() => {
+              if (!lastfmMarquee) return;
+              const overflowing = lastfmValue.scrollWidth > lastfmMarquee.clientWidth;
+              lastfmMarquee.classList.toggle("is-scrolling", overflowing);
+              if (overflowing) {
+                const duration = Math.max(8, lastfmValue.scrollWidth / 30);
+                lastfmMarquee.style.setProperty("--marquee-dur", `${duration}s`);
+              }
+            });
+          } catch {
+            /* leave the row hidden — the dossier never shows a broken readout */
+          }
+        };
+        fetchNowListening();
+        setInterval(fetchNowListening, 60_000);
+
+        // about panel — slide the still aside to reveal the bio
+        const heroEl = document.querySelector(".hero");
+        const bio = document.getElementById("about");
+        const toggleBtn = document.getElementById("about-toggle");
+        const openPanel = () => {
+          heroEl?.classList.add("is-open");
+          toggleBtn?.setAttribute("aria-expanded", "true");
+          bio?.focus({ preventScroll: true });
+        };
+        const closePanel = () => {
+          heroEl?.classList.remove("is-open");
+          toggleBtn?.setAttribute("aria-expanded", "false");
+          if (toggleBtn instanceof HTMLElement) toggleBtn.focus();
+        };
+        toggleBtn?.addEventListener("click", () => {
+          heroEl?.classList.contains("is-open") ? closePanel() : openPanel();
+        });
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && heroEl?.classList.contains("is-open")) closePanel();
+        });
+        document.querySelectorAll('a[href="/#about"]').forEach((a) =>
+          a.addEventListener("click", (e) => {
+            e.preventDefault();
+            openPanel();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          })
+        );
+        if (location.hash === "#about") openPanel();
+
+      </script>
+      <p class="hero__more">
+        <button
+          type="button"
+          class="linklike"
+          id="about-toggle"
+          aria-expanded="false"
+          aria-controls="about"
+        >
+          <span class="when-closed">More about me <span class="arrow">→</span></span>
+          <span class="when-open"><span class="arrow">←</span> Back</span>
+        </button>
+      </p>
+      <p class="hero__scroll tag">
+        <span class="arrow">↓</span> Scroll
+      </p>
+    </div>
+    <div class="hero__stage">
+      <figure class="hero__visual">
+        <Image
+          class="hero__still"
+          src={heatStill}
+          alt="Still from Michael Mann's Heat (1995)"
+          widths={[768, 1280, 1920]}
+          sizes="(max-width: 60rem) 100vw, 70vw"
+          loading="eager"
+          fetchpriority="high"
+        />
+      </figure>
+      <div class="hero__bio" id="about" tabindex="-1" aria-label="About me">
+        <h2 class="hero__bio-title">Profile</h2>
+        <div class="bio-grid">
+          <ul class="dossier bio-fields">
+            <li class="dossier__row">
+              <span class="tag">Born / Raised</span>
+              <span class="dossier__val">North Texas</span>
+            </li>
+            <li class="dossier__row">
+              <span class="tag">Graduated</span>
+              <span class="dossier__val">Texas A&amp;M</span>
+            </li>
+            <li class="dossier__row">
+              <span class="tag">Majored</span>
+              <span class="dossier__val">Computer Science</span>
+            </li>
+            <li class="dossier__row">
+              <span class="tag">Contact</span>
+              <span class="dossier__val">
+                <a href="mailto:syedabdulkarim00@gmail.com">syedabdulkarim00@gmail.com</a>
+              </span>
+            </li>
+          </ul>
+          <div class="bio-prose">
+            <p>
+              My fascinations include film, literature, music,<span class="redacted"><span class="redacted__text">classified</span></span>, programming,
+              weightlifting, and design.
+              I believe the curation of taste is a noble pursuit and necessary
+              in finding form, living life.
+            </p>
+          </div>
+          <div class="bio-circle" aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap reveal" style="--i: 1" id="library" aria-label="Library">
+    <div class="shelf-head">
+      <h2 class="shelf-title" id="films-title">Favorite <span class="hl">Films</span></h2>
+      {/* TODO: replace href with your Letterboxd profile URL */}
+      <a class="shelf-ext" href="https://letterboxd.com/">Letterboxd <span class="arrow">→</span></a>
+    </div>
+    <div class="shelf-row" aria-labelledby="films-title">
+      {favoriteMovies.map((movie) => {
+        const Card = movie.data.link ? "a" : "article";
+        return (
+          <Card
+            class="film-card"
+            style={`--card-glow: ${movie.data.glow ?? "transparent"}`}
+            href={movie.data.link}
+            target={movie.data.link ? "_blank" : undefined}
+            rel={movie.data.link ? "noopener" : undefined}
+          >
+            {movie.data.poster && (
+              <Image
+                class="film-card__poster"
+                src={movie.data.poster}
+                alt={`Poster for ${movie.data.title}`}
+                widths={[320, 640]}
+                sizes="(max-width: 64rem) 45vw, 320px"
+              />
+            )}
+            <h3 class="film-card__title">{movie.data.title}</h3>
+            <p class="film-card__meta">
+              {movie.data.director}, {movie.data.year}{movie.data.note && ` — ${movie.data.note}`}
+            </p>
+          </Card>
+        );
+      })}
+    </div>
+
+    <div class="shelf-head">
+      <h2 class="shelf-title" id="books-title">Favorite <span class="hl">Books</span></h2>
+      {/* TODO: replace href with your Goodreads profile URL */}
+      <a class="shelf-ext" href="https://www.goodreads.com/">Goodreads <span class="arrow">→</span></a>
+    </div>
+    <div class="shelf-row" aria-labelledby="books-title">
+      {favoriteBooks.map((book) => {
+        const Card = book.data.link ? "a" : "article";
+        return (
+          <Card
+            class="film-card"
+            style={`--card-glow: ${book.data.glow ?? "transparent"}`}
+            href={book.data.link}
+            target={book.data.link ? "_blank" : undefined}
+            rel={book.data.link ? "noopener" : undefined}
+          >
+            {book.data.cover ? (
+              <Image
+                class="film-card__poster"
+                src={book.data.cover}
+                alt={`Cover of ${book.data.title}`}
+                widths={[320, 640]}
+                sizes="(max-width: 64rem) 45vw, 320px"
+              />
+            ) : (
+              <div class="book-card__cover" aria-hidden="true">
+                <span class="tag">{statusLabel[book.data.status]}</span>
+                <span class="book-card__initial">{book.data.title.replace(/^(The|A|An)\s+/i, "").charAt(0)}</span>
+              </div>
+            )}
+            <h3 class="film-card__title">{book.data.title}</h3>
+            <p class="film-card__meta">
+              {book.data.author}{book.data.note && ` — ${book.data.note}`}
+            </p>
+          </Card>
+        );
+      })}
+    </div>
+  </section>
+</Layout>
